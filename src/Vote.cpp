@@ -14,9 +14,9 @@
 
 using namespace std;
 
-const int MAXN1 = 100;
-const int MAXN2 = 100;
-const int MAXM = 500;
+const int MAXN1 = 10000;
+const int MAXN2 = 10000;
+const int MAXM = 50000;
 
 enum Pet {cat, dog};
 
@@ -160,8 +160,8 @@ bool checkVote(const string input, const int countCat, const int countDog, Pet &
 	return true;
 }
 
-void writeTest(string voteFile) {
-	int numCases = rand() % 100 + 1;
+void writeTest(string voteFile, int _cases, int _cats, int _dogs, int _votes) {
+	int numCases = rand() % _cases + 1;
 
 	ofstream writeFile(voteFile);
 
@@ -174,9 +174,9 @@ void writeTest(string voteFile) {
 
 	for (int i = 0; i < numCases; i++)
 	{
-		int numCats = rand() % 100 + 1;
-		int numDogs = rand() % 100 + 1;
-		int numVotes = rand() % 500 + 1;
+		int numCats = rand() % _cats + 1;
+		int numDogs = rand() % _dogs + 1;
+		int numVotes = rand() % _votes + 1;
 		writeFile << numCats << " " << numDogs << " " << numVotes << endl;
 
 		for (int j = 0; j < numVotes; j++)
@@ -199,14 +199,13 @@ void writeTest(string voteFile) {
 	writeFile.close();
 }
 
-void runTest(string voteFilepath, bool verbose = false) {
+void runTest(std::istream& testFile, bool verbose = false) {
 
-	ifstream testFile(voteFilepath, ios_base::in);
 
-	if (!testFile.is_open()) {
-		cout << "Unable to open file." << endl;
-		return;
-	}
+	//if (!testFile.is_open()) {
+		//cout << "Unable to open file." << endl;
+		//return;
+	//}
 
 	int numCases, numCats, numDogs, numVotes;
 
@@ -233,7 +232,7 @@ void runTest(string voteFilepath, bool verbose = false) {
 		std::set<Vote> catbox, dogbox;
 		int catVotes, dogVotes = 0;
 
-		testFile.ignore(); //one more endl?
+		testFile.ignore();
 
 		//loop per vote *****************************************************
 		for (int j = 0; j < numVotes; j++) {
@@ -253,20 +252,20 @@ void runTest(string voteFilepath, bool verbose = false) {
 
 		testcase.initGraph(catVotes, dogVotes);
 
+		int edgecount = 0;
+
 		for (std::set<Vote>::iterator left = catbox.begin(); left != catbox.end(); ++left) {
 			for (std::set<Vote>::iterator right = dogbox.begin(); right != dogbox.end(); ++right) {
 				if (left->isIncompatible(*right)) {
 					int cattemp = left->id;
 					int dogtemp = right->id;
 					if (verbose)
-						cout << "Incompatibility between Cat vote " << cattemp << " and Dog vote " << dogtemp << endl;
+						cout << "Edge " <<edgecount++ << ": Cat vote " << cattemp << ", Dog vote " << dogtemp << endl;
 					testcase.addEdge(cattemp, dogtemp);
 				}
 			}
 		}
 
-		if (verbose)
-			std::cout << "Satisfied Voters: " << (numVotes - testcase.hopcroftKarp()) << std::endl;
 		std::cout << (numVotes - testcase.hopcroftKarp()) << std::endl;
 
 
@@ -274,7 +273,7 @@ void runTest(string voteFilepath, bool verbose = false) {
 		numCats = numDogs = numVotes = 0;
 	}
 
-	testFile.close();
+	//testFile.close();
 }
 
 void Graph::initGraph(int _n1, int _n2) {

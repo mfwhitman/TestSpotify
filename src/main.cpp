@@ -15,14 +15,22 @@ int main() {
 
 	//auto t1 = std::chrono::high_resolution_clock::now();
 
-	//writeTest("random.txt");
-	runTest("testfile.txt", false);
+	//writeTest("./Debug/random.txt", 3, 100, 100, 500);
 
-	auto t2 = std::chrono::high_resolution_clock::now();
+	//std::filebuf fb;
+	//fb.open ("random.txt", std::ios_base::in);
+	//std::istream testFile (&fb);
+	//runTest(testFile, true);
+
+	//auto t2 = std::chrono::high_resolution_clock::now();
 
 	//std::cout << "Elapsed: "
 	//	 << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count()
 	//	 << " ms\n";
+
+	//fb.close();
+
+	runTest(std::cin, false);
 
 	return 0;
 }
