@@ -2,12 +2,12 @@
  * main.cpp
  *
  *  Created on: 10/12/2013
- *      Author: michael
+ *      Author: Michael Whitman
  */
 
 #include <iostream>
 #include <fstream>
-#include <chrono>
+//#include <chrono>
 
 #include "Vote.h"
 

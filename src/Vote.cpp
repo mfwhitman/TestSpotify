@@ -25,8 +25,8 @@ public:
 	int n1, n2, edges, last[MAXN1];
 	int previous[MAXM];
 	int head[MAXM];
-	int matching[MAXN2], dist[MAXN1], Q[MAXN1];
-	bool used[MAXN1], vis[MAXN1];
+	int matching[MAXN2], dist[MAXN1], queue[MAXN1];
+	bool used[MAXN1], visited[MAXN1];
 
 	void initGraph(int, int);
 	void addEdge(int, int);
@@ -201,7 +201,6 @@ void writeTest(string voteFile, int _cases, int _cats, int _dogs, int _votes) {
 
 void runTest(std::istream& testFile, bool verbose = false) {
 
-
 	//if (!testFile.is_open()) {
 		//cout << "Unable to open file." << endl;
 		//return;
@@ -268,8 +267,6 @@ void runTest(std::istream& testFile, bool verbose = false) {
 
 		std::cout << (numVotes - testcase.hopcroftKarp()) << std::endl;
 
-
-
 		numCats = numDogs = numVotes = 0;
 	}
 
@@ -289,54 +286,54 @@ void Graph::addEdge(int u, int v) {
     last[u] = edges++;
 }
 
-void Graph::breadthFirstSearch() {
-    fill(dist, dist + n1, -1);
-    int sizeQ = 0;
-    for (int u = 0; u < n1; ++u) {
-        if (!used[u]) {
-            Q[sizeQ++] = u;
-            dist[u] = 0;
+void Graph::breadthFirstSearch() {		//finds free vertices, then
+    fill(dist, dist + n1, -1);			//reset distances to infinity
+    int queueSize = 0;					//initialize queue
+    for (int u = 0; u < n1; ++u) {		//for each vertex in the U partition,
+        if (!used[u]) {					//if it's not in the partial matching,
+            queue[queueSize++] = u;		//add it to the queue
+            dist[u] = 0;				//reset its distance to 0. it's a starting point.
         }
     }
-    for (int i = 0; i < sizeQ; i++) {
-        int u1 = Q[i];
-        for (int e = last[u1]; e >= 0; e = previous[e]) {
-            int u2 = matching[head[e]];
-            if (u2 >= 0 && dist[u2] < 0) {
-                dist[u2] = dist[u1] + 1;
-                Q[sizeQ++] = u2;
+    for (int i = 0; i < queueSize; i++) {
+        int u1 = queue[i];									//for each vert in the queue,
+        for (int e = last[u1]; e >= 0; e = previous[e]) {	//get edges that are adjacent to the U vert,
+            int u2 = matching[head[e]];						//from that edge's V vert, find what U vert its connected to in the partial matching (otherwise ignore)
+            if (u2 >= 0 && dist[u2] < 0) {					//if the u vert its distance is unmeasured, (i.e. its distance is zero)
+                dist[u2] = dist[u1] + 1;					//set its distance from the starting vert in this augmenting path
+                queue[queueSize++] = u2;					//and add the new U vert to the queue.
             }
         }
     }
 }
 
-bool Graph::depthFirstSearch(int u1) {
-    vis[u1] = true;
-    for (int e = last[u1]; e >= 0; e = previous[e]) {
-        int v = head[e];
-        int u2 = matching[v];
-        if ((u2 < 0) || (!vis[u2] && (dist[u2] == dist[u1] + 1) && depthFirstSearch(u2))) {
-            matching[v] = u1;
-            used[u1] = true;
-            return true;
+bool Graph::depthFirstSearch(int u1) {						//check a U vert for viability in a augmenting path
+    visited[u1] = true;										//set it as visited
+    for (int e = last[u1]; e >= 0; e = previous[e]) {		//for each edge connected to the U vert,
+        int v = head[e];									//get the V vertex of that edge
+        int u2 = matching[v];								//get the U vertex of the V vertex's match
+        if ((u2 < 0) || (!visited[u2] && (dist[u2] == dist[u1] + 1) && depthFirstSearch(u2))) {
+            matching[v] = u1;					//if its a free vert. OR if its unvisited, its one hop away from the 1st U vert,
+            used[u1] = true;					//AND the vert can continue an augmenting path, put the edge in the matching.
+            return true;						//mark the U vert as used in the matching.
         }
     }
     return false;
 }
 
 int Graph::hopcroftKarp() {
-    fill(used, used + n1, false);
-    fill(matching, matching + n2, -1);
+    fill(used, used + n1, false);					//uncheck U verts from being used in the matching
+    fill(matching, matching + n2, -1);				//remove all V verts from the partial match
     for (int res = 0;;) {
-    	breadthFirstSearch();
-        fill(vis, vis + n1, false);
+    	breadthFirstSearch();						//find free U verts and measure
+        fill(visited, visited + n1, false);			//set all the U verts as being unvisited
         int f = 0;
-        for (int u = 0; u < n1; ++u)
-            if (!used[u] && depthFirstSearch(u))
+        for (int u = 0; u < n1; ++u)				//for each U vert,
+            if (!used[u] && depthFirstSearch(u))	//check if its not already used and test its viability for a augmenting path
                 ++f;
-        if (!f)
-            return res;
+        if (!f)										//if there are no more augmenting paths,
+            return res;								//berge's lemma states that is a maximum :)
         res += f;
     }
-    return 0; // Unused
+    return 0;
 }
